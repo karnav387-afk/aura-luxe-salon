@@ -1,11 +1,11 @@
 ---
 // Hero.astro
 ---
-<section class="relative h-[80vh] lg:h-screen flex items-center overflow-hidden bg-slate-950">
+<section class="hero-section relative h-[80vh] lg:h-screen flex items-center overflow-hidden bg-slate-950">
   <!-- Full-Width Background Video Container -->
   <div class="absolute inset-0 w-full h-full z-0">
     <!-- Subtle dark overlay (45%) for optimal text readability -->
-    <div class="absolute inset-0 z-10 pointer-events-none" style="background-color: rgba(0, 0, 0, 0.45);"></div>
+    <div class="hero-overlay absolute inset-0 z-10 pointer-events-none" style="background-color: rgba(0, 0, 0, 0.45);"></div>
     
     <video 
       id="hero-video" 
@@ -20,27 +20,37 @@
   </div>
 
   <!-- Left-Aligned Content Overlay -->
-  <div class="container mx-auto px-6 lg:px-12 relative z-20 w-full">
-    <div class="max-w-2xl animate-fade-up">
-      <p class="text-accent font-medium tracking-widest uppercase text-sm mb-4">Premium Salon Experience</p>
-      <h1 class="text-5xl lg:text-7xl font-heading text-white leading-tight mb-6">
+  <div class="hero-content-container container mx-auto px-6 lg:px-12 relative z-20 w-full">
+    <div class="hero-text-wrapper max-w-2xl animate-fade-up">
+      <!-- Desktop & Tablet Subtitle -->
+      <p class="hero-subtitle hidden md:block text-accent font-medium tracking-widest uppercase text-sm mb-4">Premium Salon Experience</p>
+      
+      <!-- Desktop & Tablet Heading -->
+      <h1 class="hero-heading hidden md:block text-5xl lg:text-7xl font-heading text-white leading-tight mb-6">
         Expert Hair Care &<br/> Luxury Beauty Services
       </h1>
-      <p class="text-slate-200 text-lg mb-10 max-w-xl leading-relaxed">
+      <!-- Mobile Heading (Shortened to 2 lines max) -->
+      <h1 class="hero-heading md:hidden text-5xl lg:text-7xl font-heading text-white leading-tight mb-6">
+        Luxury Hair & Beauty
+      </h1>
+
+      <!-- Desktop & Tablet Description -->
+      <p class="hero-description hidden md:block text-slate-200 text-lg mb-10 max-w-xl leading-relaxed">
         Transform your look with personalized styling, advanced hair treatments, premium color services, and beauty experiences designed around you.
       </p>
       
-      <div class="flex flex-col sm:flex-row gap-4 mb-16">
+      <div class="hero-buttons flex flex-col sm:flex-row gap-4 mb-16">
         <a href="#" class="book-btn px-8 py-4 bg-primary text-white text-center font-medium rounded-full hover-scale shadow-xl shadow-primary/20 transition-all">
           Book Appointment
         </a>
-        <a href="#services" class="px-8 py-4 bg-transparent text-white text-center font-medium rounded-full border-2 border-white hover:bg-white/10 transition-colors">
+        <!-- Secondary button is hidden on mobile and shown only on tablet/desktop -->
+        <a href="#services" class="hero-btn-secondary hidden md:inline-block px-8 py-4 bg-transparent text-white text-center font-medium rounded-full border-2 border-white hover:bg-white/10 transition-colors">
           Explore Services
         </a>
       </div>
 
       <!-- Stats -->
-      <div class="grid grid-cols-3 gap-6 pt-8 border-t border-white/20 max-w-lg">
+      <div class="hero-stats grid grid-cols-3 gap-6 pt-8 border-t border-white/20 max-w-lg">
         <div>
           <h3 class="text-3xl font-heading text-white mb-1">20+</h3>
           <p class="text-sm text-slate-300">Years Experience</p>
@@ -86,3 +96,97 @@
     }
   });
 </script>
+
+<style>
+  /* Mobile-only responsive fixes (only below 768px) */
+  @media (max-width: 767px) {
+    .hero-section {
+      height: 75vh !important; /* Reduced height to avoid excessive scrolling on mobile */
+      min-height: 75vh !important;
+      padding-top: 110px !important; /* Proper top spacing below fixed navbar to avoid header/logo overlaps */
+      padding-bottom: 32px !important;
+      display: flex !important;
+      align-items: center !important;
+    }
+
+    .hero-overlay {
+      /* Subtle dark overlay on mobile for better text readability */
+      background-color: rgba(0, 0, 0, 0.55) !important;
+    }
+
+    #hero-video {
+      /* Optimized object position to make the model's face more visible on portrait mobile screens */
+      object-position: 65% center !important;
+    }
+
+    .hero-content-container {
+      padding-left: 32px !important; /* Increased horizontal padding (24px-32px range) to prevent text from feeling glued to edges */
+      padding-right: 32px !important;
+    }
+
+    .hero-text-wrapper {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      text-align: center !important; /* Centered content alignment */
+      width: 100% !important;
+    }
+
+    .hero-heading {
+      text-align: center !important;
+      /* Responsive typography using clamp() reduced by ~13% for 2-3 lines of text and strong visual impact */
+      font-size: clamp(1.6rem, 7.5vw, 2.25rem) !important;
+      line-height: 1.25 !important;
+      margin-bottom: 28px !important; /* Slightly reduced margin for tighter layout flow */
+    }
+
+    .hero-buttons {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      gap: 12px !important; /* Spacing between buttons */
+      margin-bottom: 28px !important; /* Spacing directly between Button and Stats */
+      width: 100% !important;
+    }
+
+    .hero-buttons a {
+      width: 88% !important; /* Buttons width reduced to 85-90% of content container */
+      max-width: 320px !important;
+      padding: 11px 20px !important;
+      font-size: 13.5px !important;
+      height: 46px !important; /* Touch target height */
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      text-align: center !important;
+      margin-left: auto !important; /* Keep buttons centered */
+      margin-right: auto !important;
+    }
+
+    .hero-btn-secondary {
+      display: none !important; /* Force hide secondary button on mobile to resolve specificity override */
+    }
+
+    .hero-stats {
+      width: 100% !important;
+      max-width: 450px !important;
+      padding-top: 20px !important; /* Spacing above Stats */
+      margin-top: 0px !important;
+      gap: 12px !important;
+    }
+
+    .hero-stats div {
+      text-align: center !important; /* Center align stats cells for symmetry */
+    }
+
+    .hero-stats h3 {
+      font-size: 22px !important;
+      margin-bottom: 2px !important;
+    }
+
+    .hero-stats p {
+      font-size: 10px !important;
+      letter-spacing: 0.02em !important;
+    }
+  }
+</style>
