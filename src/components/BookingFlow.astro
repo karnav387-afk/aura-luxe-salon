@@ -1,0 +1,543 @@
+---
+// BookingFlow.astro
+---
+
+<!-- Calendly Script -->
+<link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
+<script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
+
+<div id="booking-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
+  <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" id="booking-overlay"></div>
+  
+  <div class="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 rounded-2xl shadow-2xl m-4 transform scale-95 transition-transform duration-300" id="booking-card">
+    
+    <!-- Header -->
+    <div class="sticky top-0 z-10 flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
+      <div>
+        <h2 class="text-2xl font-heading text-slate-900 dark:text-white" id="booking-title">Book Appointment</h2>
+        <div class="flex items-center gap-2 mt-2">
+          <div class="w-16 h-1 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+            <div id="progress-bar" class="h-full bg-primary transition-all duration-300 w-[20%]"></div>
+          </div>
+          <span class="text-xs text-slate-500 font-medium" id="step-indicator">Step 1 of 5</span>
+        </div>
+      </div>
+      <button id="close-booking" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="p-6">
+      
+      <!-- STEP 1: Customer Details -->
+      <div id="step-1" class="booking-step block animate-fade-up">
+        <p class="text-slate-600 dark:text-slate-400 mb-6">Please provide your details so we can manage your booking.</p>
+        
+        <form id="customer-form" class="space-y-4">
+          <div>
+            <label for="customer-name" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Full Name <span class="text-red-500">*</span></label>
+            <input type="text" id="customer-name" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:outline-none transition-all" placeholder="Jane Doe" />
+          </div>
+          <div>
+            <label for="customer-email" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email Address <span class="text-red-500">*</span></label>
+            <input type="email" id="customer-email" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:outline-none transition-all" placeholder="jane@example.com" />
+          </div>
+          <div>
+            <label for="customer-phone" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Phone Number <span class="text-red-500">*</span></label>
+            <input type="tel" id="customer-phone" required class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:outline-none transition-all" placeholder="+91 98765 43210" />
+          </div>
+          <div class="pt-4">
+            <button type="submit" id="btn-next-1" class="w-full py-4 bg-primary text-white font-medium rounded-xl hover:bg-primary-dark shadow-lg shadow-primary/20 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2">
+              <span>Continue</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- STEP 2: Service Selection -->
+      <div id="step-2" class="booking-step hidden animate-fade-up">
+        <p class="text-slate-600 dark:text-slate-400 mb-6">Select a service to book your appointment.</p>
+        
+        <div id="services-loading" class="py-12 flex flex-col items-center justify-center text-slate-500">
+          <svg class="animate-spin -ml-1 mr-3 h-8 w-8 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          <p>Loading services...</p>
+        </div>
+
+        <div id="services-list" class="space-y-4 max-h-[50vh] overflow-y-auto pr-2 hidden">
+          <!-- Populated by JS -->
+        </div>
+
+        <div class="pt-6 flex gap-4">
+          <button id="btn-back-2" class="px-6 py-4 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-medium rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">Back</button>
+          <button id="btn-next-2" disabled class="flex-1 py-4 bg-primary text-white font-medium rounded-xl hover:bg-primary-dark shadow-lg shadow-primary/20 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:shadow-none flex items-center justify-center gap-2">
+            <span>Choose Date & Time</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- STEP 3: Calendly -->
+      <div id="step-3" class="booking-step hidden animate-fade-up">
+        <div class="text-center py-12">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar-days mx-auto text-primary mb-4"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>
+          <h3 class="text-2xl font-heading text-slate-900 dark:text-white mb-2">Schedule Your Appointment</h3>
+          <p class="text-slate-600 dark:text-slate-400 mb-6">A secure Calendly window will open for you to select a date and time.</p>
+          <button id="btn-open-calendly" class="px-8 py-4 bg-primary text-white font-medium rounded-xl hover:bg-primary-dark shadow-lg shadow-primary/20 hover:-translate-y-0.5 transition-all">
+            Open Calendar Popup
+          </button>
+        </div>
+
+        <div class="pt-6 flex gap-4">
+          <button id="btn-back-3" class="px-6 py-4 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-medium rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">Back</button>
+          <div class="flex-1 text-center py-4 text-sm text-slate-500">
+            Waiting for slot selection...
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4: Payment -->
+      <div id="step-4" class="booking-step hidden animate-fade-up">
+        <div class="text-center mb-8">
+          <h3 class="text-xl font-heading text-slate-900 dark:text-white mb-2">Complete Your Payment</h3>
+          <p class="text-slate-600 dark:text-slate-400">Scan the QR code below using any UPI app to confirm your booking.</p>
+        </div>
+        
+        <div class="bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 max-w-sm mx-auto shadow-inner">
+          <div class="flex justify-between items-center mb-6 pb-6 border-b border-slate-200 dark:border-slate-700">
+            <div>
+              <p class="text-sm text-slate-500 font-medium uppercase tracking-wider mb-1">Service Amount</p>
+              <p class="text-2xl font-heading text-slate-900 dark:text-white" id="payment-amount">₹0.00</p>
+            </div>
+            <div class="text-right">
+              <p class="text-sm text-slate-500 font-medium uppercase tracking-wider mb-1">Service</p>
+              <p class="text-md font-medium text-slate-900 dark:text-white" id="payment-service-name">Selected Service</p>
+            </div>
+          </div>
+          
+          <div class="bg-white p-4 rounded-xl shadow-sm mb-6 flex justify-center">
+            <!-- Dynamically injected QR code -->
+            <img id="upi-qr" src="" alt="UPI QR Code" class="w-48 h-48 object-contain" />
+          </div>
+          
+          <div class="text-center bg-slate-100 dark:bg-slate-700/50 py-3 rounded-lg flex items-center justify-center gap-2 mb-2 cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" id="copy-upi">
+            <span class="font-medium text-slate-700 dark:text-slate-300" id="upi-id">arnavk672-2@okhdfcbank</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy text-slate-500"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+          </div>
+          <p class="text-xs text-center text-slate-500">Click to copy UPI ID</p>
+        </div>
+
+        <div class="pt-8">
+          <button id="btn-complete-payment" class="w-full py-4 bg-primary text-white font-medium rounded-xl hover:bg-primary-dark shadow-lg shadow-primary/20 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-circle-2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+            <span>I Have Completed Payment</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- STEP 5: Success -->
+      <div id="step-5" class="booking-step hidden animate-fade-up">
+        <div class="py-12 flex flex-col items-center text-center">
+          <div class="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-6 animate-pulse">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check text-green-600 dark:text-green-400"><path d="M20 6 9 17l-5-5"/></svg>
+          </div>
+          <h3 class="text-3xl font-heading text-slate-900 dark:text-white mb-4">Booking Received!</h3>
+          <p class="text-lg text-slate-600 dark:text-slate-400 mb-8 max-w-md">Thank you for trusting us. Your booking request has been received. Our team will verify your payment and confirm your appointment shortly.</p>
+          
+          <div class="bg-slate-50 dark:bg-slate-800 rounded-xl p-6 w-full max-w-sm mb-8 text-left border border-slate-200 dark:border-slate-700">
+            <p class="text-sm text-slate-500 mb-1">Customer</p>
+            <p class="font-medium text-slate-900 dark:text-white mb-4" id="summary-name">-</p>
+            
+            <p class="text-sm text-slate-500 mb-1">Service</p>
+            <p class="font-medium text-slate-900 dark:text-white mb-4" id="summary-service">-</p>
+            
+            <p class="text-sm text-slate-500 mb-1">Status</p>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800">
+              <span class="w-1.5 h-1.5 rounded-full bg-yellow-500"></span>
+              Payment Verification Pending
+            </span>
+          </div>
+
+          <p class="text-sm text-slate-500 flex items-center gap-2">
+            <svg class="animate-spin h-4 w-4 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            Redirecting to homepage in <span id="countdown">7</span> seconds...
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  import { supabase } from '../lib/supabase';
+
+  // State
+  let currentStep = 1;
+  let appointmentId: string | null = null;
+  let selectedServiceId: string | null = null;
+  let selectedServicePrice: number = 0;
+  let selectedServiceName: string = '';
+  let selectedServiceDuration: number = 0;
+  let customerName: string = '';
+  let isPackagePreselected: boolean = false;
+  
+  // DOM Elements
+  const modal = document.getElementById('booking-modal')!;
+  const overlay = document.getElementById('booking-overlay')!;
+  const card = document.getElementById('booking-card')!;
+  const closeBtn = document.getElementById('close-booking')!;
+  
+  const stepIndicator = document.getElementById('step-indicator')!;
+  const progressBar = document.getElementById('progress-bar')!;
+  const bookingTitle = document.getElementById('booking-title')!;
+  
+  // Step 1
+  const customerForm = document.getElementById('customer-form') as HTMLFormElement;
+  const btnNext1 = document.getElementById('btn-next-1') as HTMLButtonElement;
+  
+  // Step 2
+  const servicesList = document.getElementById('services-list')!;
+  const servicesLoading = document.getElementById('services-loading')!;
+  const btnNext2 = document.getElementById('btn-next-2') as HTMLButtonElement;
+  const btnBack2 = document.getElementById('btn-back-2') as HTMLButtonElement;
+  
+  // Step 3
+  const btnBack3 = document.getElementById('btn-back-3') as HTMLButtonElement;
+  const btnOpenCalendly = document.getElementById('btn-open-calendly') as HTMLButtonElement;
+  
+  // Step 4
+  const btnCompletePayment = document.getElementById('btn-complete-payment') as HTMLButtonElement;
+  const paymentAmount = document.getElementById('payment-amount')!;
+  const paymentServiceName = document.getElementById('payment-service-name')!;
+  const upiQr = document.getElementById('upi-qr') as HTMLImageElement;
+  const copyUpi = document.getElementById('copy-upi')!;
+  const upiIdElement = document.getElementById('upi-id')!;
+  
+  // Step 5
+  const summaryName = document.getElementById('summary-name')!;
+  const summaryService = document.getElementById('summary-service')!;
+  const countdownEl = document.getElementById('countdown')!;
+
+  // Events
+  (window as any).openBookingModalWithPackage = (id: string, price: number, name: string) => {
+    selectedServiceId = id;
+    selectedServicePrice = price;
+    selectedServiceName = name;
+    isPackagePreselected = true;
+    openModal();
+  };
+
+  window.addEventListener('openBookingModal', () => {
+    isPackagePreselected = false;
+    selectedServiceId = null;
+    selectedServicePrice = 0;
+    selectedServiceName = '';
+    openModal();
+  });
+  overlay.addEventListener('click', closeModal);
+  closeBtn.addEventListener('click', closeModal);
+  
+  document.querySelectorAll('.book-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      openModal();
+    });
+  });
+
+  // Form Submission
+  customerForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = (document.getElementById('customer-name') as HTMLInputElement).value;
+    const email = (document.getElementById('customer-email') as HTMLInputElement).value;
+    const phone = (document.getElementById('customer-phone') as HTMLInputElement).value;
+    
+    btnNext1.disabled = true;
+    btnNext1.innerHTML = `<svg class="animate-spin h-5 w-5 mr-2 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Saving...`;
+
+    try {
+      const { data, error } = await supabase.from('appointments').insert({
+        customer_name: name,
+        customer_email: email,
+        customer_phone: phone,
+        status: 'pending',
+        payment_status: 'unpaid'
+      }).select('id').single();
+
+      if (error) throw error;
+      
+      appointmentId = data.id;
+      customerName = name;
+      
+      if (isPackagePreselected && selectedServiceId) {
+        // Automatically update appointment with pre-selected package and skip Step 2
+        await supabase.from('appointments').update({ service_id: selectedServiceId }).eq('id', appointmentId);
+        goToStep(3);
+        openCalendlyPopup();
+        initCalendlyListener();
+      } else {
+        goToStep(2);
+        loadServices();
+      }
+    } catch (err: any) {
+      alert('Failed to save details: ' + err.message);
+    } finally {
+      btnNext1.disabled = false;
+      btnNext1.innerHTML = `<span>Continue</span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`;
+    }
+  });
+
+  // Step 2 logic
+  btnBack2.addEventListener('click', () => goToStep(1));
+  btnNext2.addEventListener('click', async () => {
+    if (!selectedServiceId || !appointmentId) return;
+    
+    btnNext2.disabled = true;
+    const originalText = btnNext2.innerHTML;
+    btnNext2.innerHTML = `Saving...`;
+    
+    try {
+      const { error } = await supabase.from('appointments')
+        .update({ service_id: selectedServiceId })
+        .eq('id', appointmentId);
+        
+      if (error) throw error;
+      goToStep(3);
+      openCalendlyPopup();
+      initCalendlyListener();
+    } catch (err: any) {
+      alert('Failed to update service: ' + err.message);
+      btnNext2.disabled = false;
+      btnNext2.innerHTML = originalText;
+    }
+  });
+
+  // Step 3 logic
+  btnBack3.addEventListener('click', () => goToStep(2));
+  btnOpenCalendly.addEventListener('click', openCalendlyPopup);
+
+  // Step 4 logic
+  btnCompletePayment.addEventListener('click', async () => {
+    if (!appointmentId) return;
+    
+    btnCompletePayment.disabled = true;
+    btnCompletePayment.innerHTML = `Confirming...`;
+    
+    try {
+      const { error } = await supabase.from('appointments')
+        .update({ payment_status: 'pending_verification' })
+        .eq('id', appointmentId);
+        
+      if (error) throw error;
+      goToStep(5);
+      startSuccessCountdown();
+    } catch (err: any) {
+      alert('Failed to update payment status: ' + err.message);
+      btnCompletePayment.disabled = false;
+    }
+  });
+
+  copyUpi.addEventListener('click', () => {
+    navigator.clipboard.writeText(upiIdElement.innerText);
+    const originalHtml = copyUpi.innerHTML;
+    copyUpi.innerHTML = `<span class="font-medium text-green-600">Copied!</span>`;
+    setTimeout(() => { copyUpi.innerHTML = originalHtml; }, 2000);
+  });
+
+  // Functions
+  function openModal() {
+    modal.classList.remove('opacity-0', 'pointer-events-none');
+    card.classList.remove('scale-95');
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+  }
+
+  function closeModal() {
+    if (currentStep === 5) return; // Don't close on success screen manually easily
+    modal.classList.add('opacity-0', 'pointer-events-none');
+    card.classList.add('scale-95');
+    document.body.style.overflow = '';
+  }
+
+  function goToStep(step: number) {
+    document.querySelectorAll('.booking-step').forEach(el => el.classList.add('hidden'));
+    document.getElementById(`step-${step}`)?.classList.remove('hidden');
+    
+    currentStep = step;
+    stepIndicator.innerText = `Step ${step} of 5`;
+    progressBar.style.width = `${(step / 5) * 100}%`;
+    
+    const titles = ['Customer Details', 'Select Service', 'Choose Date & Time', 'Payment', 'Booking Complete'];
+    bookingTitle.innerText = titles[step - 1];
+
+    if (step === 4) {
+      paymentAmount.innerText = `₹${selectedServicePrice}`;
+      paymentServiceName.innerText = selectedServiceName;
+      const upiId = 'arnavk672-2@okhdfcbank';
+      const upiStr = `upi://pay?pa=${upiId}&pn=Aura Luxe Salon&am=${selectedServicePrice}&cu=INR&tn=${encodeURIComponent(selectedServiceName)}`;
+      upiQr.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiStr)}`;
+    }
+    
+    if (step === 5) {
+      summaryName.innerText = customerName;
+      summaryService.innerText = selectedServiceName;
+      closeBtn.classList.add('hidden'); // Hide close button on success
+    }
+  }
+
+  async function loadServices() {
+    console.log('loadServices called');
+    servicesLoading.classList.remove('hidden');
+    servicesList.classList.add('hidden');
+    
+    const { data, error } = await supabase.from('services').select('*').eq('active', true).eq('category', 'service').order('price', { ascending: false });
+    
+    console.log('SERVICES DATA:', data);
+    console.log('SERVICES ERROR:', error);
+    
+    servicesLoading.classList.add('hidden');
+    servicesList.classList.remove('hidden');
+    
+    if (error) {
+      servicesList.innerHTML = `<p class="text-red-500 text-center py-4">Error loading services: ${error.message}</p>`;
+      return;
+    }
+    
+    if (!data || data.length === 0) {
+      servicesList.innerHTML = `<p class="text-slate-500 text-center py-4">No active services found. Please check Supabase.</p>`;
+      return;
+    }
+    
+    servicesList.innerHTML = data.map((service: any) => {
+      const isSelected = selectedServiceId === service.id;
+      return `
+        <div class="service-card cursor-pointer border-2 ${isSelected ? 'selected-service border-primary bg-primary/5' : 'border-slate-100 dark:border-slate-800'} rounded-xl p-4 hover:border-primary transition-all bg-white dark:bg-slate-900 flex justify-between items-center group relative overflow-hidden" data-id="${service.id}" data-price="${service.price}" data-name="${service.name}" data-duration="${service.duration_minutes}">
+          <!-- Checkmark badge (slides in when selected) -->
+          <div class="checkmark-badge absolute top-0 right-0 w-6 h-6 bg-primary text-white flex items-center justify-center rounded-bl-lg transform ${isSelected ? 'translate-x-0 translate-y-0' : 'translate-x-full -translate-y-full'} z-20 transition-transform duration-300">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check"><path d="M20 6 9 17l-5-5"/></svg>
+          </div>
+
+          <div class="pr-4 relative z-10">
+            <h4 class="font-medium text-slate-900 dark:text-white group-hover:text-primary transition-colors">${service.name}</h4>
+            ${service.description ? `<p class="text-xs text-slate-500 mt-1 mb-2 line-clamp-2">${service.description}</p>` : ''}
+            <div class="flex items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-400">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              ${service.duration_minutes} mins
+            </div>
+          </div>
+          <div class="text-right pl-4 border-l border-slate-100 dark:border-slate-800 relative z-10">
+            <p class="font-heading text-xl text-slate-900 dark:text-white">₹${service.price}</p>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Enable next button if a service is already selected (e.g. going back)
+    if (selectedServiceId) {
+      btnNext2.disabled = false;
+    } else {
+      btnNext2.disabled = true;
+    }
+
+    // Attach selection events
+    document.querySelectorAll('.service-card').forEach(card => {
+      card.addEventListener('click', (e) => {
+        // Deselect others
+        document.querySelectorAll('.service-card').forEach(c => {
+          c.classList.remove('selected-service', 'border-primary', 'bg-primary/5');
+          c.classList.add('border-slate-100', 'dark:border-slate-800');
+          const badge = c.querySelector('.checkmark-badge');
+          if (badge) {
+            badge.classList.remove('translate-x-0', 'translate-y-0');
+            badge.classList.add('translate-x-full', '-translate-y-full');
+          }
+        });
+        
+        // Select this
+        const target = e.currentTarget as HTMLElement;
+        target.classList.add('selected-service', 'border-primary', 'bg-primary/5');
+        target.classList.remove('border-slate-100', 'dark:border-slate-800');
+        const badge = target.querySelector('.checkmark-badge');
+        if (badge) {
+          badge.classList.remove('translate-x-full', '-translate-y-full');
+          badge.classList.add('translate-x-0', 'translate-y-0');
+        }
+        
+        selectedServiceId = target.getAttribute('data-id');
+        const rawPrice = target.getAttribute('data-price') || '0';
+        selectedServicePrice = parseFloat(rawPrice.replace(/[^0-9.]/g, '')) || 0;
+        selectedServiceName = target.getAttribute('data-name') || '';
+        const rawDuration = target.getAttribute('data-duration') || '0';
+        selectedServiceDuration = parseInt(rawDuration) || 0;
+        
+        btnNext2.disabled = false;
+      });
+    });
+  }
+
+  function openCalendlyPopup() {
+    if ((window as any).Calendly) {
+      (window as any).Calendly.initPopupWidget({ url: 'https://calendly.com/karnav387/new-meeting' });
+    }
+  }
+
+  function initCalendlyListener() {
+    if ((window as any)._calendlyListenerAttached) return;
+    (window as any)._calendlyListenerAttached = true;
+    
+    const listener = async (e: MessageEvent) => {
+      if (e.origin !== "https://calendly.com") return;
+      if (e.data.event === 'calendly.event_scheduled') {
+        window.removeEventListener('message', listener);
+        (window as any)._calendlyListenerAttached = false;
+        
+        // Store current date/time as placeholder since Calendly frontend doesn't return exact times
+        const today = new Date().toISOString().split('T')[0];
+        const now = new Date().toTimeString().split(' ')[0];
+        
+        if (appointmentId) {
+           await supabase.from('appointments').update({
+             appointment_date: today,
+             appointment_time: now
+           }).eq('id', appointmentId);
+        }
+        
+        if ((window as any).Calendly && (window as any).Calendly.closePopupWidget) {
+          (window as any).Calendly.closePopupWidget();
+        }
+        
+        goToStep(4);
+      }
+    };
+    window.addEventListener('message', listener);
+  }
+
+  function startSuccessCountdown() {
+    let count = 7;
+    const interval = setInterval(() => {
+      count--;
+      countdownEl.innerText = count.toString();
+      if (count <= 0) {
+        clearInterval(interval);
+        window.location.href = '/';
+      }
+    }, 1000);
+  }
+</script>
+
+<style is:global>
+  /* Selected Service Card styles */
+  .service-card {
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+  
+  .service-card.selected-service {
+    border-color: var(--color-primary) !important;
+    background-color: rgba(31, 74, 69, 0.08) !important;
+    box-shadow: 0 10px 25px -5px rgba(31, 74, 69, 0.15), 0 8px 10px -6px rgba(31, 74, 69, 0.15) !important;
+  }
+
+  .service-card .checkmark-badge {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+</style>

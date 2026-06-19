@@ -1,0 +1,60 @@
+---
+// Services.astro
+const services = [
+  {
+    num: "01",
+    title: "Hair Styling",
+    desc: "Precision cuts, blowouts and custom styling.",
+    price: "₹999"
+  },
+  {
+    num: "02",
+    title: "Hair Coloring",
+    desc: "Balayage, highlights and luxury color services.",
+    price: "₹2499"
+  },
+  {
+    num: "03",
+    title: "Hair Treatments",
+    desc: "Keratin, smoothening and repair therapies.",
+    price: "₹1999"
+  },
+  {
+    num: "04",
+    title: "Bridal Beauty",
+    desc: "Complete bridal makeover packages.",
+    price: "₹7999"
+  }
+];
+---
+<section id="services" class="py-24 bg-white">
+  <div class="container mx-auto px-6 lg:px-12">
+    <div class="text-center mb-16 animate-fade-up">
+      <h2 class="text-4xl lg:text-5xl font-heading text-primary mb-4">Our Signature Services</h2>
+      <p class="text-text-secondary text-lg max-w-2xl mx-auto">Designed to enhance your natural beauty.</p>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+      {services.map((service, idx) => (
+        <div 
+          class="group relative bg-bg-light rounded-2xl p-8 hover-lift border border-border-light overflow-hidden animate-fade-up"
+          style={`transition-delay: ${idx * 100}ms;`}
+        >
+          <!-- Large Background Number -->
+          <div class="absolute -right-4 -top-8 text-9xl font-heading text-secondary/10 font-bold transition-transform group-hover:scale-110">
+            {service.num}
+          </div>
+          
+          <div class="relative z-10 h-full flex flex-col">
+            <h3 class="text-2xl font-heading text-primary mb-3 mt-4 group-hover:text-accent transition-colors">{service.title}</h3>
+            <p class="text-text-secondary mb-8 flex-grow">{service.desc}</p>
+            <div class="flex items-center justify-between border-t border-border-light pt-4 mt-auto">
+              <span class="text-sm text-text-secondary uppercase tracking-wider">Starting</span>
+              <span class="text-xl font-medium text-primary">{service.price}</span>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

@@ -1,0 +1,67 @@
+---
+const currentPath = Astro.url.pathname;
+
+const navItems = [
+  { name: 'Dashboard', href: '/admin/dashboard', icon: 'layout-dashboard' },
+  { name: 'Services', href: '/admin/services', icon: 'scissors' },
+  { name: 'Staff', href: '/admin/staff', icon: 'users' },
+  { name: 'Appointments', href: '/admin/appointments', icon: 'calendar-check' },
+  { name: 'Waitlist', href: '/admin/waitlist', icon: 'list-todo' },
+  { name: 'Settings', href: '/admin/settings', icon: 'settings' },
+];
+---
+
+<aside class="fixed inset-y-0 left-0 w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 z-30 transition-transform transform -translate-x-full lg:translate-x-0" id="admin-sidebar">
+  <div class="h-16 flex items-center px-6 border-b border-slate-200 dark:border-slate-800">
+    <a href="/admin/dashboard" class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+      <i data-lucide="sparkles" class="w-6 h-6 text-primary"></i>
+      <span>Aura Admin</span>
+    </a>
+  </div>
+  
+  <nav class="p-4 space-y-1 overflow-y-auto h-[calc(100vh-4rem)]">
+    <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4 px-3 mt-4">Menu</div>
+    {navItems.map(item => {
+      const isActive = currentPath.startsWith(item.href);
+      return (
+        <a 
+          href={item.href}
+          class={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+            isActive 
+              ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-medium' 
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/50'
+          }`}
+        >
+          <i data-lucide={item.icon} class="w-5 h-5"></i>
+          {item.name}
+        </a>
+      )
+    })}
+    
+    <div class="pt-8 mt-8 border-t border-slate-200 dark:border-slate-800">
+      <a href="/" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg transition-colors" target="_blank">
+        <i data-lucide="external-link" class="w-5 h-5"></i>
+        View Public Site
+      </a>
+    </div>
+  </nav>
+</aside>
+
+<!-- Mobile backdrop -->
+<div class="fixed inset-0 bg-slate-900/50 z-20 lg:hidden hidden" id="sidebar-backdrop"></div>
+
+<script>
+  // Simple mobile sidebar toggle logic
+  const sidebar = document.getElementById('admin-sidebar');
+  const backdrop = document.getElementById('sidebar-backdrop');
+  
+  window.toggleSidebar = () => {
+    sidebar?.classList.toggle('-translate-x-full');
+    backdrop?.classList.toggle('hidden');
+  };
+
+  backdrop?.addEventListener('click', () => {
+    sidebar?.classList.add('-translate-x-full');
+    backdrop?.classList.add('hidden');
+  });
+</script>

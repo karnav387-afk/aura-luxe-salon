@@ -1,0 +1,164 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Waitlist Management">
+  <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden mt-4">
+    <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/30">
+      <div>
+        <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Active Waitlist</h2>
+        <p class="text-sm text-slate-500">Customers waiting for an available slot.</p>
+      </div>
+      <div class="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium">
+        <span id="waitlist-count">0</span> people waiting
+      </div>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-sm border-b border-slate-200 dark:border-slate-800">
+            <th class="p-4 font-medium">Customer Details</th>
+            <th class="p-4 font-medium">Desired Service & Staff</th>
+            <th class="p-4 font-medium">Desired Date/Time</th>
+            <th class="p-4 font-medium">Added On</th>
+            <th class="p-4 font-medium text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="waitlist-body" class="divide-y divide-slate-200 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
+          <tr>
+            <td colspan="5" class="p-8 text-center text-slate-500">
+              <i data-lucide="loader-2" class="w-6 h-6 animate-spin mx-auto"></i>
+              <p class="mt-2 text-sm">Loading waitlist...</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  import { supabase } from '../../lib/supabase';
+  import { createIcons, icons } from 'lucide';
+
+  async function fetchWaitlist() {
+    const { data, error } = await supabase
+      .from('waitlist')
+      .select(`
+        *,
+        services (name),
+        staff (name)
+      `)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      window.showToast('Failed to load waitlist', 'error');
+      return;
+    }
+    
+    document.getElementById('waitlist-count')!.textContent = data.length.toString();
+    renderTable(data);
+  }
+
+  function renderTable(data: any[]) {
+    const tbody = document.getElementById('waitlist-body')!;
+    tbody.innerHTML = '';
+
+    if (data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" class="p-12 text-center text-slate-500">Waitlist is currently empty.</td></tr>`;
+      return;
+    }
+
+    data.forEach(entry => {
+      tbody.innerHTML += `
+        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+          <td class="p-4">
+            <div class="font-medium text-slate-900 dark:text-white">${entry.customer_name}</div>
+            <div class="text-xs text-slate-500 mt-1 flex flex-col gap-0.5">
+              ${entry.email ? `<span>✉️ <a href="mailto:${entry.email}" class="hover:text-primary hover:underline">${entry.email}</a></span>` : ''}
+              ${entry.phone ? `<span>📞 <a href="tel:${entry.phone}" class="hover:text-primary hover:underline">${entry.phone}</a></span>` : ''}
+            </div>
+          </td>
+          <td class="p-4">
+            <div class="font-medium text-slate-700 dark:text-slate-300">${entry.services?.name || 'Any Service'}</div>
+            <div class="text-xs text-slate-500 mt-1">with ${entry.staff?.name || 'Any Available'}</div>
+          </td>
+          <td class="p-4">
+            <div class="text-slate-900 dark:text-white">${entry.desired_date ? new Date(entry.desired_date).toLocaleDateString() : 'Any Date'}</div>
+            <div class="text-sm text-slate-500 mt-1 font-medium">${entry.desired_time || 'Any Time'}</div>
+          </td>
+          <td class="p-4 text-sm text-slate-500">
+            ${new Date(entry.created_at).toLocaleDateString()}
+          </td>
+          <td class="p-4 text-right">
+            <button onclick="convertToAppointment('${entry.id}')" class="px-3 py-1.5 text-xs font-medium bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-lg transition-colors mr-2">
+              Book Now
+            </button>
+            <button onclick="deleteWaitlist('${entry.id}')" class="p-1.5 text-slate-400 hover:text-red-500 rounded transition-colors" title="Remove">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+    
+    createIcons({ icons });
+  }
+
+  window.convertToAppointment = async (id: string) => {
+    // In a full application, this would open a modal to confirm the final Date/Time before creating.
+    // Here we will do a direct conversion assuming desired date/time is valid for demonstration.
+    try {
+      const { data: entry } = await supabase.from('waitlist').select('*').eq('id', id).single();
+      if (!entry) throw new Error('Waitlist entry not found');
+
+      if (!entry.desired_date || !entry.desired_time || !entry.service_id) {
+        window.showToast('Missing required fields to auto-book (Date, Time, or Service). Contact customer manually.', 'error');
+        return;
+      }
+
+      const aptPayload = {
+        customer_name: entry.customer_name,
+        customer_email: entry.email,
+        customer_phone: entry.phone,
+        service_id: entry.service_id,
+        staff_id: entry.staff_id,
+        appointment_date: entry.desired_date,
+        appointment_time: entry.desired_time,
+        status: 'confirmed'
+      };
+
+      const { error: insertError } = await supabase.from('appointments').insert(aptPayload);
+      if (insertError) throw insertError;
+
+      const { error: delError } = await supabase.from('waitlist').delete().eq('id', id);
+      if (delError) throw delError;
+
+      window.showToast('Successfully converted to confirmed appointment!', 'success');
+      fetchWaitlist();
+    } catch (err: any) {
+      window.showToast(err.message, 'error');
+    }
+  };
+
+  window.deleteWaitlist = async (id: string) => {
+    if (!confirm('Are you sure you want to remove this customer from the waitlist?')) return;
+    try {
+      const { error } = await supabase.from('waitlist').delete().eq('id', id);
+      if (error) throw error;
+      window.showToast('Waitlist entry removed', 'info');
+      fetchWaitlist();
+    } catch (err: any) {
+      window.showToast(err.message, 'error');
+    }
+  };
+
+  declare global {
+    interface Window {
+      convertToAppointment: (id: string) => void;
+      deleteWaitlist: (id: string) => void;
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', fetchWaitlist);
+</script>

@@ -1,0 +1,214 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Dashboard">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Stat Cards -->
+    <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 flex items-center gap-4">
+      <div class="w-12 h-12 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+        <i data-lucide="calendar" class="w-6 h-6"></i>
+      </div>
+      <div>
+        <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Total Bookings</p>
+        <p class="text-2xl font-bold text-slate-900 dark:text-white" id="stat-total">--</p>
+      </div>
+    </div>
+
+    <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 flex items-center gap-4">
+      <div class="w-12 h-12 rounded-lg bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center">
+        <i data-lucide="calendar-check" class="w-6 h-6"></i>
+      </div>
+      <div>
+        <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Today's Bookings</p>
+        <p class="text-2xl font-bold text-slate-900 dark:text-white" id="stat-today">--</p>
+      </div>
+    </div>
+
+    <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 flex items-center gap-4">
+      <div class="w-12 h-12 rounded-lg bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+        <i data-lucide="clock" class="w-6 h-6"></i>
+      </div>
+      <div>
+        <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Upcoming</p>
+        <p class="text-2xl font-bold text-slate-900 dark:text-white" id="stat-upcoming">--</p>
+      </div>
+    </div>
+
+    <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 flex items-center gap-4">
+      <div class="w-12 h-12 rounded-lg bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 flex items-center justify-center">
+        <i data-lucide="dollar-sign" class="w-6 h-6"></i>
+      </div>
+      <div>
+        <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Est. Revenue</p>
+        <p class="text-2xl font-bold text-slate-900 dark:text-white" id="stat-revenue">₹--</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    
+    <!-- Recent Bookings Table -->
+    <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 col-span-1 lg:col-span-2 overflow-hidden flex flex-col">
+      <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+        <h2 class="font-semibold text-slate-900 dark:text-white">Recent Bookings</h2>
+        <a href="/admin/appointments" class="text-sm text-primary hover:underline">View All</a>
+      </div>
+      <div class="overflow-x-auto flex-1">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-sm">
+              <th class="p-4 font-medium">Customer</th>
+              <th class="p-4 font-medium">Service</th>
+              <th class="p-4 font-medium">Date & Time</th>
+              <th class="p-4 font-medium">Status</th>
+            </tr>
+          </thead>
+          <tbody id="recent-bookings-body" class="divide-y divide-slate-200 dark:divide-slate-800">
+            <!-- Loading state -->
+            <tr>
+              <td colspan="4" class="p-8 text-center text-slate-500">
+                <i data-lucide="loader-2" class="w-6 h-6 animate-spin mx-auto"></i>
+                <p class="mt-2 text-sm">Loading bookings...</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Quick Stats Sidebar -->
+    <div class="space-y-8">
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6">
+        <h2 class="font-semibold text-slate-900 dark:text-white mb-4">Popular Services</h2>
+        <ul id="popular-services-list" class="space-y-4">
+          <li class="text-center text-slate-500 text-sm py-4"><i data-lucide="loader-2" class="w-5 h-5 animate-spin mx-auto"></i></li>
+        </ul>
+      </div>
+
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6">
+        <h2 class="font-semibold text-slate-900 dark:text-white mb-4">Staff Performance</h2>
+        <ul id="staff-performance-list" class="space-y-4">
+          <li class="text-center text-slate-500 text-sm py-4"><i data-lucide="loader-2" class="w-5 h-5 animate-spin mx-auto"></i></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  import { supabase } from '../../lib/supabase';
+  import { createIcons, icons } from 'lucide';
+
+  async function fetchDashboardData() {
+    try {
+      // Fetch Appointments
+      const { data: appointments, error: aptError } = await supabase
+        .from('appointments')
+        .select(`
+          *,
+          services (name, price),
+          staff (name)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (aptError) throw aptError;
+
+      // Calculate Stats
+      const total = appointments.length;
+      const todayDate = new Date().toISOString().split('T')[0];
+      const today = appointments.filter(a => a.appointment_date === todayDate).length;
+      const upcoming = appointments.filter(a => a.status === 'pending' || a.status === 'confirmed').length;
+      const estRevenue = appointments.reduce((sum, a) => sum + (a.services?.price || 0), 0);
+
+      // Update DOM
+      document.getElementById('stat-total')!.textContent = total.toString();
+      document.getElementById('stat-today')!.textContent = today.toString();
+      document.getElementById('stat-upcoming')!.textContent = upcoming.toString();
+      document.getElementById('stat-revenue')!.textContent = `₹${estRevenue.toLocaleString()}`;
+
+      // Render Recent Bookings (Top 5)
+      const tbody = document.getElementById('recent-bookings-body')!;
+      tbody.innerHTML = '';
+      
+      if (appointments.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-slate-500">No recent bookings.</td></tr>`;
+      } else {
+        appointments.slice(0, 5).forEach(apt => {
+          const statusColors: Record<string, string> = {
+            'pending': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+            'confirmed': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+            'completed': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+            'cancelled': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+          };
+          
+          tbody.innerHTML += `
+            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+              <td class="p-4">
+                <div class="font-medium text-slate-900 dark:text-white">${apt.customer_name}</div>
+                <div class="text-xs text-slate-500">${apt.customer_email || apt.customer_phone || 'No contact info'}</div>
+              </td>
+              <td class="p-4 text-slate-600 dark:text-slate-300">${apt.services?.name || 'Unknown'}</td>
+              <td class="p-4 text-slate-600 dark:text-slate-300">
+                ${new Date(apt.appointment_date).toLocaleDateString()}<br/>
+                <span class="text-xs text-slate-500">${apt.appointment_time}</span>
+              </td>
+              <td class="p-4">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[apt.status]}">
+                  ${apt.status.charAt(0).toUpperCase() + apt.status.slice(1)}
+                </span>
+              </td>
+            </tr>
+          `;
+        });
+      }
+
+      // Group for Popular Services
+      const svcCount: Record<string, number> = {};
+      appointments.forEach(a => {
+        if (a.services?.name) {
+          svcCount[a.services.name] = (svcCount[a.services.name] || 0) + 1;
+        }
+      });
+      const topServices = Object.entries(svcCount).sort((a,b) => b[1] - a[1]).slice(0, 5);
+      
+      const svcList = document.getElementById('popular-services-list')!;
+      svcList.innerHTML = topServices.length ? topServices.map(([name, count]) => `
+        <li class="flex items-center justify-between">
+          <span class="text-sm font-medium text-slate-700 dark:text-slate-300">${name}</span>
+          <span class="text-sm text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">${count} bookings</span>
+        </li>
+      `).join('') : '<li class="text-sm text-slate-500">No data available</li>';
+
+      // Group for Staff Performance
+      const staffCount: Record<string, number> = {};
+      appointments.forEach(a => {
+        if (a.staff?.name) {
+          staffCount[a.staff.name] = (staffCount[a.staff.name] || 0) + 1;
+        }
+      });
+      const topStaff = Object.entries(staffCount).sort((a,b) => b[1] - a[1]).slice(0, 5);
+      
+      const staffList = document.getElementById('staff-performance-list')!;
+      staffList.innerHTML = topStaff.length ? topStaff.map(([name, count]) => `
+        <li class="flex items-center justify-between">
+          <span class="text-sm font-medium text-slate-700 dark:text-slate-300">${name}</span>
+          <span class="text-sm text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">${count} apts</span>
+        </li>
+      `).join('') : '<li class="text-sm text-slate-500">No data available</li>';
+
+    } catch (err: any) {
+      console.error('Error fetching dashboard data:', err);
+      window.showToast('Failed to load dashboard data', 'error');
+    }
+  }
+
+  // Real-time subscription placeholder (Bonus functionality)
+  supabase.channel('public:appointments')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments' }, payload => {
+      fetchDashboardData();
+    })
+    .subscribe();
+
+  document.addEventListener('DOMContentLoaded', fetchDashboardData);
+</script>

@@ -1,0 +1,68 @@
+---
+// Pricing.astro
+import { supabase } from '../lib/supabase';
+
+// Fetch packages
+const { data: packages, error } = await supabase
+  .from('services')
+  .select('*')
+  .eq('active', true)
+  .eq('category', 'package')
+  .order('price', { ascending: true });
+
+// Fallback in case of error or empty
+const displayPackages = packages && packages.length > 0 ? packages : [];
+---
+<section id="packages" class="py-24 bg-bg-light">
+  <div class="container mx-auto px-6 lg:px-12">
+    <div class="text-center mb-16 animate-fade-up">
+      <h2 class="text-4xl lg:text-5xl font-heading text-primary mb-4">Beauty Packages</h2>
+      <p class="text-text-secondary text-lg max-w-2xl mx-auto">Curated experiences for comprehensive care.</p>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-8 items-center max-w-6xl mx-auto">
+      {displayPackages.map((pkg: any, index: number) => {
+        const isFeatured = index === 1; // Middle package is featured
+        const delay = index === 0 ? '0ms' : index === 1 ? '150ms' : '300ms';
+        
+        // Split description by newlines or commas
+        const features = pkg.description ? pkg.description.split(/[\n,]+/).map((f: string) => f.trim()).filter(Boolean) : [];
+        
+        if (isFeatured) {
+          return (
+            <div class="bg-primary rounded-3xl p-8 shadow-2xl transform lg:-translate-y-4 animate-fade-up relative overflow-hidden" style={`transition-delay: ${delay};`}>
+              <div class="absolute top-6 right-6 bg-secondary text-primary text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                Most Popular
+              </div>
+              <h3 class="text-2xl font-heading text-white mb-2">{pkg.name}</h3>
+              <div class="flex items-baseline gap-2 mb-6 text-white">
+                <span class="text-5xl font-bold">₹{pkg.price}</span>
+              </div>
+              <ul class="space-y-4 mb-8 text-secondary/90">
+                {features.map((feature: string) => (
+                  <li class="flex items-center gap-3"><span class="text-secondary">✓</span> {feature}</li>
+                ))}
+              </ul>
+              <button onclick={`window.openBookingModalWithPackage('${pkg.id}', ${pkg.price}, '${pkg.name.replace(/'/g, "\\'")}')`} class="block w-full py-3 text-center bg-secondary text-primary font-medium rounded-full hover:bg-white hover-scale transition-all shadow-xl shadow-secondary/20">Choose Package</button>
+            </div>
+          );
+        }
+
+        return (
+          <div class="bg-white rounded-3xl p-8 border border-border-light shadow-lg animate-fade-up hover-lift" style={`transition-delay: ${delay};`}>
+            <h3 class="text-2xl font-heading text-primary mb-2">{pkg.name}</h3>
+            <div class="flex items-baseline gap-2 mb-6">
+              <span class="text-4xl font-bold text-primary">₹{pkg.price}</span>
+            </div>
+            <ul class="space-y-4 mb-8 text-text-secondary">
+              {features.map((feature: string) => (
+                <li class="flex items-center gap-3"><span class="text-accent">✓</span> {feature}</li>
+              ))}
+            </ul>
+            <button onclick={`window.openBookingModalWithPackage('${pkg.id}', ${pkg.price}, '${pkg.name.replace(/'/g, "\\'")}')`} class="block w-full py-3 text-center border-2 border-primary text-primary font-medium rounded-full hover:bg-primary hover:text-white transition-colors">Choose Package</button>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+</section>

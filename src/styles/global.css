@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #1F4A45;
+  --color-secondary: #DCC7A1;
+  --color-accent: #B6874B;
+  --color-bg-light: #FAF8F5;
+  --color-text-primary: #1E1E1E;
+  --color-text-secondary: #666666;
+  --color-border-light: #E8E3DC;
+
+  --font-heading: 'Playfair Display', serif;
+  --font-body: 'Inter', sans-serif;
+}
+
+/* Custom Base Styles */
+@layer base {
+  body {
+    @apply bg-bg-light text-text-primary font-body antialiased selection:bg-secondary selection:text-primary;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading tracking-tight;
+  }
+}
+
+/* Antigravity Animation Utilities */
+@layer utilities {
+  .animate-fade-up {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1), transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  
+  .animate-fade-up.in-view {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .hover-lift {
+    @apply transition-transform duration-300 ease-out hover:-translate-y-2 hover:shadow-xl;
+  }
+
+  .hover-scale {
+    @apply transition-transform duration-500 ease-out hover:scale-105;
+  }
+  
+  .glass-nav {
+    @apply bg-bg-light/80 backdrop-blur-md border-b border-border-light/50;
+  }
+}

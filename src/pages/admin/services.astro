@@ -1,0 +1,238 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Services Management">
+  <div class="flex items-center justify-between mb-6">
+    <div class="relative w-full max-w-sm">
+      <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+      <input type="text" id="search-input" placeholder="Search services..." class="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:outline-none transition-shadow" />
+    </div>
+    <button onclick="openModal()" class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors shadow-sm">
+      <i data-lucide="plus" class="w-4 h-4"></i>
+      <span>Add Service</span>
+    </button>
+  </div>
+
+  <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-sm border-b border-slate-200 dark:border-slate-800">
+            <th class="p-4 font-medium">Name</th>
+            <th class="p-4 font-medium">Description</th>
+            <th class="p-4 font-medium">Duration</th>
+            <th class="p-4 font-medium">Price</th>
+            <th class="p-4 font-medium">Status</th>
+            <th class="p-4 font-medium text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="services-body" class="divide-y divide-slate-200 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
+          <tr>
+            <td colspan="6" class="p-8 text-center text-slate-500">
+              <i data-lucide="loader-2" class="w-6 h-6 animate-spin mx-auto"></i>
+              <p class="mt-2 text-sm">Loading services...</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Service Modal -->
+  <div id="service-modal" class="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-lg mx-4 transform scale-95 transition-transform duration-300 modal-content overflow-hidden flex flex-col max-h-[90vh]">
+      <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+        <h3 class="text-xl font-semibold text-slate-900 dark:text-white" id="modal-title">Add Service</h3>
+        <button type="button" onclick="closeModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      
+      <form id="service-form" class="p-6 space-y-4 overflow-y-auto">
+        <input type="hidden" id="service-id" />
+        
+        <div>
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Service Name</label>
+          <input type="text" id="service-name" required class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:outline-none" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Description</label>
+          <textarea id="service-desc" rows="3" class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:outline-none"></textarea>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Duration (mins)</label>
+            <input type="number" id="service-duration" required min="5" step="5" class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:outline-none" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Price (₹)</label>
+            <input type="number" id="service-price" required min="0" class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:outline-none" />
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 mt-4">
+          <input type="checkbox" id="service-active" checked class="rounded border-slate-300 text-primary focus:ring-primary w-4 h-4" />
+          <label for="service-active" class="text-sm text-slate-700 dark:text-slate-300">Active (Visible to customers)</label>
+        </div>
+      </form>
+      
+      <div class="p-6 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-3 bg-slate-50 dark:bg-slate-800/50">
+        <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-lg font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Cancel</button>
+        <button type="submit" form="service-form" class="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors shadow-sm flex items-center gap-2">
+          <i data-lucide="save" class="w-4 h-4"></i>
+          Save Service
+        </button>
+      </div>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  import { supabase } from '../../lib/supabase';
+  import { createIcons, icons } from 'lucide';
+
+  let allServices: any[] = [];
+
+  const modal = document.getElementById('service-modal')!;
+  const modalContent = modal.querySelector('.modal-content')!;
+  const form = document.getElementById('service-form') as HTMLFormElement;
+  const searchInput = document.getElementById('search-input') as HTMLInputElement;
+  
+  window.openModal = (id?: string) => {
+    form.reset();
+    document.getElementById('modal-title')!.textContent = id ? 'Edit Service' : 'Add Service';
+    
+    if (id) {
+      const s = allServices.find(x => x.id === id);
+      if (s) {
+        (document.getElementById('service-id') as HTMLInputElement).value = s.id;
+        (document.getElementById('service-name') as HTMLInputElement).value = s.name;
+        (document.getElementById('service-desc') as HTMLTextAreaElement).value = s.description || '';
+        (document.getElementById('service-duration') as HTMLInputElement).value = s.duration_minutes;
+        (document.getElementById('service-price') as HTMLInputElement).value = s.price;
+        (document.getElementById('service-active') as HTMLInputElement).checked = s.active;
+      }
+    } else {
+      (document.getElementById('service-id') as HTMLInputElement).value = '';
+    }
+
+    modal.classList.remove('opacity-0', 'pointer-events-none');
+    modalContent.classList.remove('scale-95');
+  };
+
+  window.closeModal = () => {
+    modal.classList.add('opacity-0', 'pointer-events-none');
+    modalContent.classList.add('scale-95');
+  };
+
+  async function fetchServices() {
+    const { data, error } = await supabase
+      .from('services')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      window.showToast('Failed to load services', 'error');
+      return;
+    }
+    
+    allServices = data;
+    renderTable(data);
+  }
+
+  function renderTable(data: any[]) {
+    const tbody = document.getElementById('services-body')!;
+    tbody.innerHTML = '';
+
+    if (data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-500">No services found.</td></tr>`;
+      return;
+    }
+
+    data.forEach(s => {
+      const activeBadge = s.active 
+        ? `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">Active</span>`
+        : `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-400">Inactive</span>`;
+
+      tbody.innerHTML += `
+        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+          <td class="p-4 font-medium">${s.name}</td>
+          <td class="p-4 max-w-xs truncate" title="${s.description}">${s.description || '-'}</td>
+          <td class="p-4">${s.duration_minutes} min</td>
+          <td class="p-4 font-medium">₹${s.price}</td>
+          <td class="p-4">${activeBadge}</td>
+          <td class="p-4 text-right">
+            <button onclick="openModal('${s.id}')" class="p-1.5 text-slate-400 hover:text-blue-500 rounded transition-colors" title="Edit">
+              <i data-lucide="edit-2" class="w-4 h-4"></i>
+            </button>
+            <button onclick="deleteService('${s.id}')" class="p-1.5 text-slate-400 hover:text-red-500 rounded transition-colors ml-1" title="Delete">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+    
+    createIcons({ icons });
+  }
+
+  searchInput.addEventListener('input', (e) => {
+    const term = (e.target as HTMLInputElement).value.toLowerCase();
+    const filtered = allServices.filter(s => s.name.toLowerCase().includes(term) || (s.description && s.description.toLowerCase().includes(term)));
+    renderTable(filtered);
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = (document.getElementById('service-id') as HTMLInputElement).value;
+    const payload = {
+      name: (document.getElementById('service-name') as HTMLInputElement).value,
+      description: (document.getElementById('service-desc') as HTMLTextAreaElement).value,
+      duration_minutes: parseInt((document.getElementById('service-duration') as HTMLInputElement).value),
+      price: parseFloat((document.getElementById('service-price') as HTMLInputElement).value),
+      active: (document.getElementById('service-active') as HTMLInputElement).checked,
+    };
+
+    try {
+      if (id) {
+        const { error } = await supabase.from('services').update(payload).eq('id', id);
+        if (error) throw error;
+        window.showToast('Service updated successfully', 'success');
+      } else {
+        const { error } = await supabase.from('services').insert(payload);
+        if (error) throw error;
+        window.showToast('Service created successfully', 'success');
+      }
+      closeModal();
+      fetchServices();
+    } catch (err: any) {
+      window.showToast(err.message || 'An error occurred', 'error');
+    }
+  });
+
+  window.deleteService = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this service?')) return;
+    try {
+      const { error } = await supabase.from('services').delete().eq('id', id);
+      if (error) throw error;
+      window.showToast('Service deleted', 'info');
+      fetchServices();
+    } catch (err: any) {
+      window.showToast(err.message, 'error');
+    }
+  };
+
+  // Declare global window functions
+  declare global {
+    interface Window {
+      openModal: (id?: string) => void;
+      closeModal: () => void;
+      deleteService: (id: string) => void;
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', fetchServices);
+</script>

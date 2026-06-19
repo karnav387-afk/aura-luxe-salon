@@ -1,0 +1,111 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Settings">
+  <div class="max-w-4xl mx-auto space-y-8">
+    
+    <!-- Salon Information -->
+    <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+      <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+        <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Salon Information</h2>
+        <p class="text-sm text-slate-500">Update your basic business details and contact information.</p>
+      </div>
+      <div class="p-6 space-y-4">
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Business Name</label>
+            <input type="text" value="Aura Luxe Salon" class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tagline</label>
+            <input type="text" value="Beauty Refined. Confidence Elevated." class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Contact Email</label>
+            <input type="email" value="hello@auraluxe.com" class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Phone Number</label>
+            <input type="tel" value="+91 98765 43210" class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none" />
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Address</label>
+            <textarea rows="2" class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none">Noida, Uttar Pradesh, India</textarea>
+          </div>
+        </div>
+        <div class="flex justify-end pt-2">
+          <button class="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors shadow-sm" onclick="window.showToast('Settings saved successfully', 'success')">Save Information</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Business Hours -->
+    <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+      <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+        <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Business Hours</h2>
+        <p class="text-sm text-slate-500">Configure when the salon is open for bookings.</p>
+      </div>
+      <div class="p-6">
+        <div class="space-y-3">
+          {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map(day => (
+            <div class="flex items-center gap-4">
+              <div class="w-24 text-sm font-medium text-slate-700 dark:text-slate-300">{day}</div>
+              <input type="time" value="09:00" class="px-3 py-1.5 rounded-md border border-slate-200 dark:border-slate-700 bg-transparent text-slate-900 dark:text-white text-sm" />
+              <span class="text-slate-500">to</span>
+              <input type="time" value="20:00" class="px-3 py-1.5 rounded-md border border-slate-200 dark:border-slate-700 bg-transparent text-slate-900 dark:text-white text-sm" />
+            </div>
+          ))}
+          <div class="flex items-center gap-4">
+            <div class="w-24 text-sm font-medium text-slate-700 dark:text-slate-300">Sunday</div>
+            <input type="time" value="10:00" class="px-3 py-1.5 rounded-md border border-slate-200 dark:border-slate-700 bg-transparent text-slate-900 dark:text-white text-sm" />
+            <span class="text-slate-500">to</span>
+            <input type="time" value="18:00" class="px-3 py-1.5 rounded-md border border-slate-200 dark:border-slate-700 bg-transparent text-slate-900 dark:text-white text-sm" />
+          </div>
+        </div>
+        <div class="flex justify-end mt-6">
+          <button class="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors shadow-sm" onclick="window.showToast('Hours updated successfully', 'success')">Save Hours</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notifications & Policy -->
+    <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+      <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+        <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Policies & Notifications</h2>
+        <p class="text-sm text-slate-500">Manage cancellation rules and automated messages.</p>
+      </div>
+      <div class="p-6 space-y-6">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Cancellation Policy</label>
+          <textarea rows="3" class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none">Cancellations must be made at least 24 hours in advance to avoid a 50% cancellation fee.</textarea>
+        </div>
+        
+        <div class="space-y-3 border-t border-slate-200 dark:border-slate-800 pt-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="font-medium text-slate-900 dark:text-white text-sm">Email Confirmations</p>
+              <p class="text-xs text-slate-500">Send automated email when appointment is booked.</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" value="" class="sr-only peer" checked>
+              <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 dark:peer-focus:ring-primary/30 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+            </label>
+          </div>
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="font-medium text-slate-900 dark:text-white text-sm">SMS Reminders</p>
+              <p class="text-xs text-slate-500">Send text message 2 hours before appointment.</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" value="" class="sr-only peer" checked>
+              <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 dark:peer-focus:ring-primary/30 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+            </label>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</AdminLayout>

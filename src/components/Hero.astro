@@ -1,0 +1,88 @@
+---
+// Hero.astro
+---
+<section class="relative h-[80vh] lg:h-screen flex items-center overflow-hidden bg-slate-950">
+  <!-- Full-Width Background Video Container -->
+  <div class="absolute inset-0 w-full h-full z-0">
+    <!-- Subtle dark overlay (45%) for optimal text readability -->
+    <div class="absolute inset-0 z-10 pointer-events-none" style="background-color: rgba(0, 0, 0, 0.45);"></div>
+    
+    <video 
+      id="hero-video" 
+      muted 
+      loop 
+      playsinline 
+      poster="https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=1920&h=1080" 
+      class="w-full h-full object-cover opacity-0 transition-opacity duration-1000"
+    >
+      Your browser does not support the video tag.
+    </video>
+  </div>
+
+  <!-- Left-Aligned Content Overlay -->
+  <div class="container mx-auto px-6 lg:px-12 relative z-20 w-full">
+    <div class="max-w-2xl animate-fade-up">
+      <p class="text-accent font-medium tracking-widest uppercase text-sm mb-4">Premium Salon Experience</p>
+      <h1 class="text-5xl lg:text-7xl font-heading text-white leading-tight mb-6">
+        Expert Hair Care &<br/> Luxury Beauty Services
+      </h1>
+      <p class="text-slate-200 text-lg mb-10 max-w-xl leading-relaxed">
+        Transform your look with personalized styling, advanced hair treatments, premium color services, and beauty experiences designed around you.
+      </p>
+      
+      <div class="flex flex-col sm:flex-row gap-4 mb-16">
+        <a href="#" class="book-btn px-8 py-4 bg-primary text-white text-center font-medium rounded-full hover-scale shadow-xl shadow-primary/20 transition-all">
+          Book Appointment
+        </a>
+        <a href="#services" class="px-8 py-4 bg-transparent text-white text-center font-medium rounded-full border-2 border-white hover:bg-white/10 transition-colors">
+          Explore Services
+        </a>
+      </div>
+
+      <!-- Stats -->
+      <div class="grid grid-cols-3 gap-6 pt-8 border-t border-white/20 max-w-lg">
+        <div>
+          <h3 class="text-3xl font-heading text-white mb-1">20+</h3>
+          <p class="text-sm text-slate-300">Years Experience</p>
+        </div>
+        <div>
+          <h3 class="text-3xl font-heading text-white mb-1">12K+</h3>
+          <p class="text-sm text-slate-300">Happy Clients</p>
+        </div>
+        <div>
+          <h3 class="text-3xl font-heading text-white mb-1">4.9★</h3>
+          <p class="text-sm text-slate-300">Average Rating</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Lazy load video and smooth fade-in after initial page render
+  document.addEventListener('DOMContentLoaded', () => {
+    const video = document.getElementById('hero-video') as HTMLVideoElement;
+    if (video) {
+      // Asynchronously create and append the source element
+      const source = document.createElement('source');
+      source.src = 'https://edensalon.com/wp-content/uploads/2024/05/Eden-Salon-Sample-Loop-2-1080.mp4';
+      source.type = 'video/mp4';
+      video.appendChild(source);
+      
+      // Load video resources
+      video.load();
+      
+      // Play and handle transition
+      video.play().then(() => {
+        // Once video playback starts, smoothly fade it in over the poster image
+        video.classList.remove('opacity-0');
+        video.classList.add('opacity-100');
+      }).catch((err) => {
+        console.warn('Background video failed to autoplay:', err);
+        // Fallback: make it visible anyway if it loaded but blocked autoplay
+        video.classList.remove('opacity-0');
+        video.classList.add('opacity-100');
+      });
+    }
+  });
+</script>

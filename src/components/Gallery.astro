@@ -1,0 +1,36 @@
+---
+// Gallery.astro
+const images = [
+  "https://images.unsplash.com/photo-1560869713-7d0a29430803?auto=format&fit=crop&q=80&w=600",
+  "https://images.unsplash.com/photo-1595152772835-219674b2a8a6?auto=format&fit=crop&q=80&w=600",
+  "https://images.unsplash.com/photo-1492106087820-71f1a00d2b11?auto=format&fit=crop&q=80&w=600",
+  "https://images.unsplash.com/photo-1522337660859-02fbefca4702?auto=format&fit=crop&q=80&w=600",
+  "https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&q=80&w=600",
+  "https://images.unsplash.com/photo-1595476108010-b4d1f10d5e43?auto=format&fit=crop&q=80&w=600",
+  "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?auto=format&fit=crop&q=80&w=600",
+  "https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?auto=format&fit=crop&q=80&w=600"
+];
+---
+<section id="gallery" class="py-24 bg-bg-light">
+  <div class="container mx-auto px-6 lg:px-12">
+    <div class="text-center mb-16 animate-fade-up">
+      <h2 class="text-4xl lg:text-5xl font-heading text-primary mb-4">Recent Work</h2>
+      <p class="text-text-secondary text-lg max-w-2xl mx-auto">A glimpse into the transformations we create everyday.</p>
+    </div>
+
+    <!-- Masonry-style Grid using columns -->
+    <div class="columns-1 md:columns-2 lg:columns-4 gap-4 space-y-4">
+      {images.map((src, idx) => (
+        <div class="break-inside-avoid relative group overflow-hidden rounded-xl animate-fade-up" style={`transition-delay: ${(idx % 4) * 100}ms;`}>
+          <img 
+            src={src} 
+            alt="Salon Gallery Image" 
+            loading="lazy"
+            class="w-full h-auto object-cover transform transition-transform duration-700 group-hover:scale-110"
+          />
+          <div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
